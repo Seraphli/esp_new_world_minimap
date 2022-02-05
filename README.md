@@ -6,3 +6,7 @@ ES 插件新世界地图插件, python实现, 使用socket-io调用, 理论上�
 如果使用了PAC, 需要在USE_RULE里添加一条
 
 `@@||localhost.newworldminimap.com`
+
+## pyinstaller
+
+`pyinstaller --name=nwmp.exe -F plugin.py`

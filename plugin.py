@@ -1,4 +1,4 @@
-from appdirs import *
+from appdirs import user_data_dir
 import codecs
 import json
 import asyncio
@@ -6,15 +6,18 @@ import socketio
 import uuid
 import win32gui
 
+
 APP_NAME = "electron-spirit"
 NWMP_URL = "https://www.newworldminimap.com/map"
-
 
 class PluginApi(socketio.AsyncClientNamespace):
     def __init__(self, parent):
         super().__init__()
         self.elem_count = 0
         self.parent = parent
+        self.lock_flag = True
+        self.move_flag = False
+        self.dev_flag = False
 
     def on_connect(self):
         print("Connected")
