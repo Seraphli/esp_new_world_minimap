@@ -8,6 +8,8 @@ import win32gui
 
 
 APP_NAME = "electron-spirit"
+PLUGIN_NAME = "ES NWMP"
+PLUGIN_SETTING = "plugin.setting.json"
 NWMP_URL = "https://www.newworldminimap.com/map"
 
 class PluginApi(socketio.AsyncClientNamespace):
@@ -57,6 +59,9 @@ class PluginApi(socketio.AsyncClientNamespace):
     def on_exec_js_in_elem(self, data):
         print("Exec js in elem:", data)
 
+    def on_notify(self, data):
+        print("Notify:", data)
+
     def on_update_bound(self, key, _type, bound):
         print("Update bound:", key, _type, bound)
         self.parent.update_bound(bound)
@@ -82,14 +87,14 @@ class Plugin(object):
             config = json.load(f)
         self.port = config["apiPort"]
         try:
-            with codecs.open("nwmp.json") as f:
+            with codecs.open(PLUGIN_SETTING) as f:
                 self.cfg = json.load(f)
         except:
             self.cfg = {"x": 100, "y": 100, "w": 300, "h": 300}
         self.save_cfg()
 
     def save_cfg(self):
-        with codecs.open("nwmp.json", "w") as f:
+        with codecs.open(PLUGIN_SETTING, "w") as f:
             json.dump(self.cfg, f)
 
     def update_bound(self, bound):
@@ -111,6 +116,9 @@ class Plugin(object):
         ctx = {"topic": "nwmp", "pwd": str(uuid.uuid4())}
         await sio.emit("register_topic", ctx)
         self.ctx = ctx
+        await sio.emit(
+            "notify", data=(self.ctx, "Plugin Connected", PLUGIN_NAME, "success", 1500)
+        )
 
     async def wait_for_elem(self):
         while self.api.elem_count < 1:
