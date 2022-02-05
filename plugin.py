@@ -12,6 +12,7 @@ PLUGIN_NAME = "ES NWMP"
 PLUGIN_SETTING = "plugin.setting.json"
 NWMP_URL = "https://www.newworldminimap.com/map"
 
+
 class PluginApi(socketio.AsyncClientNamespace):
     def __init__(self, parent):
         super().__init__()
@@ -136,7 +137,13 @@ class Plugin(object):
                     ),
                 )
                 self.show = True
-            if not self.check_front_win_name() and self.show and self.api.lock_flag and not self.api.move_flag and not self.api.dev_flag:
+            if (
+                not self.check_front_win_name()
+                and self.show
+                and self.api.lock_flag
+                and not self.api.move_flag
+                and not self.api.dev_flag
+            ):
                 await sio.emit(
                     "hide_view",
                     data=(
