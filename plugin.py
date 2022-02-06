@@ -34,8 +34,11 @@ class PluginApi(socketio.AsyncClientNamespace):
     def on_register_topic(self, data):
         print("Register topic:", data)
 
-    def on_hook_input(self, data):
-        print("Hook input:", data)
+    def on_add_input_hook(self, data):
+        print("Add input hook:", data)
+
+    def on_del_input_hook(self, data):
+        print("Del input hook:", data)
 
     def on_insert_css(self, data):
         print("Insert css:", data)
