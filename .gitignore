@@ -1,6 +1,6 @@
 .history
 __pycache__
-nwmp.json
+plugin.setting.json
 build
 dist
 *.spec
