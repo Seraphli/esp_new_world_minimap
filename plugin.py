@@ -11,6 +11,7 @@ APP_NAME = "electron-spirit"
 PLUGIN_NAME = "ES NWMP"
 PLUGIN_SETTING = "plugin.setting.json"
 NWMP_URL = "https://www.newworldminimap.com/map"
+DEBUG = False
 
 
 class PluginApi(socketio.AsyncClientNamespace):
@@ -143,6 +144,7 @@ class Plugin(object):
                 and self.api.lock_flag
                 and not self.api.move_flag
                 and not self.api.dev_flag
+                and not DEBUG
             ):
                 await sio.emit(
                     "hide_view",
