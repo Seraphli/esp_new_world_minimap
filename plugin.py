@@ -147,7 +147,7 @@ class Plugin(object):
                 and self.api.lock_flag
                 and not self.api.move_flag
                 and not self.api.dev_flag
-                and not DEBUG
+                and not self.cfg["debug"]
             ):
                 await sio.emit(
                     "hide_view",
