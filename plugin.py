@@ -11,7 +11,7 @@ APP_NAME = "electron-spirit"
 PLUGIN_NAME = "ES NWMP"
 PLUGIN_SETTING = "plugin.setting.json"
 NWMP_URL = "https://www.newworldminimap.com/map"
-DEFAULT_CONFIG = {"x": 100, "y": 100, "w": 300, "h": 300, "debug": False}
+DEFAULT_CONFIG = {"x": 100, "y": 100, "w": 300, "h": 300, "debug": True}
 
 
 class PluginApi(socketio.AsyncClientNamespace):
