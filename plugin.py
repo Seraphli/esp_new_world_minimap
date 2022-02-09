@@ -5,6 +5,7 @@ import asyncio
 import socketio
 import uuid
 import win32gui
+import sys
 
 
 APP_NAME = "electron-spirit"
@@ -28,6 +29,7 @@ class PluginApi(socketio.AsyncClientNamespace):
 
     def on_disconnect(self):
         print("Disconnected")
+        sys.exit(0)
 
     def on_echo(self, data):
         print("Echo:", data)
