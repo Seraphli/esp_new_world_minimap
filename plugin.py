@@ -95,7 +95,7 @@ class Plugin(object):
             with codecs.open(PLUGIN_SETTING) as f:
                 self.cfg = json.load(f)
             for k in DEFAULT_CONFIG:
-                if k not in self.cfg:
+                if k not in self.cfg or type(self.cfg[k]) != type(DEFAULT_CONFIG[k]):
                     self.cfg[k] = DEFAULT_CONFIG[k]
         except:
             self.cfg = DEFAULT_CONFIG
