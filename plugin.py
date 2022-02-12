@@ -191,3 +191,5 @@ if __name__ == "__main__":
     p = Plugin()
     sio.register_namespace(p.api)
     asyncio.run(p.loop())
+    # get error
+    input()
