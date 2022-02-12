@@ -12,7 +12,7 @@ APP_NAME = "electron-spirit"
 PLUGIN_NAME = "ES NWMP"
 PLUGIN_SETTING = "plugin.setting.json"
 NWMP_URL = "https://www.newworldminimap.com/map"
-DEFAULT_CONFIG = {"x": 100, "y": 100, "w": 300, "h": 300, "debug": True}
+DEFAULT_CONFIG = {"x": 100, "y": 100, "w": 450, "h": 300, "debug": True}
 
 
 class PluginApi(socketio.AsyncClientNamespace):
@@ -97,7 +97,7 @@ class Plugin(object):
             with codecs.open(PLUGIN_SETTING) as f:
                 self.cfg = json.load(f)
             for k in DEFAULT_CONFIG:
-                if k not in self.cfg or type(self.cfg[k]) != type(DEFAULT_CONFIG[k]):
+                if k not in self.cfg or (k in self.cfg and type(self.cfg[k]) != type(DEFAULT_CONFIG[k])):
                     self.cfg[k] = DEFAULT_CONFIG[k]
         except:
             self.cfg = DEFAULT_CONFIG
