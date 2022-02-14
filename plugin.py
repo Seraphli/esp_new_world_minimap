@@ -10,9 +10,10 @@ import sys
 
 APP_NAME = "electron-spirit"
 PLUGIN_NAME = "ES NWMP"
+PLUGIN_VERSION = "0.3.0"
 PLUGIN_SETTING = "plugin.setting.json"
-NWMP_URL = "https://www.newworldminimap.com/map"
-DEFAULT_CONFIG = {"x": 100, "y": 100, "w": 450, "h": 300, "debug": True}
+NWMP_URL = ["https://www.newworldminimap.com/map", "https://www.newworld-map.com/#/"]
+DEFAULT_CONFIG = {"x": 100, "y": 100, "w": 450, "h": 300, "debug": True, "url": NWMP_URL, "index": 0}
 
 
 class PluginApi(socketio.AsyncClientNamespace):
@@ -97,7 +98,9 @@ class Plugin(object):
             with codecs.open(PLUGIN_SETTING) as f:
                 self.cfg = json.load(f)
             for k in DEFAULT_CONFIG:
-                if k not in self.cfg or (k in self.cfg and type(self.cfg[k]) != type(DEFAULT_CONFIG[k])):
+                if k not in self.cfg or (
+                    k in self.cfg and type(self.cfg[k]) != type(DEFAULT_CONFIG[k])
+                ):
                     self.cfg[k] = DEFAULT_CONFIG[k]
         except:
             self.cfg = DEFAULT_CONFIG
@@ -165,8 +168,8 @@ class Plugin(object):
         self.view_elem = {
             "key": "view-1",
             "type": 1,
-            "bound": self.cfg,
-            "content": NWMP_URL,
+            "bound": {"x": self.cfg["x"], "y": self.cfg["y"], "w": self.cfg["w"], "h": self.cfg["h"]},
+            "content": self.cfg["url"][self.cfg["index"]],
         }
         await sio.emit(
             "update_elem",
@@ -186,10 +189,19 @@ class Plugin(object):
 
 
 if __name__ == "__main__":
+    print(f"Start {PLUGIN_NAME} {PLUGIN_VERSION}")
     # asyncio
-    sio = socketio.AsyncClient()
-    p = Plugin()
-    sio.register_namespace(p.api)
-    asyncio.run(p.loop())
-    # get error
-    input()
+    try:
+        sio = socketio.AsyncClient()
+        p = Plugin()
+        sio.register_namespace(p.api)
+        asyncio.run(p.loop())
+    except KeyboardInterrupt:
+        print("Bye!")
+        sys.exit(0)
+    except Exception as e:
+        import traceback
+
+        traceback.print_exc()
+        input()
+        sys.exit(0)
