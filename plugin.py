@@ -10,7 +10,7 @@ import sys
 
 APP_NAME = "electron-spirit"
 PLUGIN_NAME = "ES NWMP"
-PLUGIN_VERSION = "0.3.0"
+PLUGIN_VERSION = "0.3.1"
 PLUGIN_SETTING = "plugin.setting.json"
 NWMP_URL = ["https://www.newworldminimap.com/map", "https://www.newworld-map.com/#/"]
 DEFAULT_CONFIG = {"x": 100, "y": 100, "w": 450, "h": 300, "debug": True, "url": NWMP_URL, "index": 0}
@@ -112,7 +112,7 @@ class Plugin(object):
 
     def update_bound(self, bound):
         self.view_elem["bound"] = bound
-        self.cfg = bound
+        self.cfg = {**self.cfg, **bound}
         self.save_cfg()
 
     def check_front_win_name(self):
