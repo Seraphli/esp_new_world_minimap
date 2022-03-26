@@ -10,10 +10,19 @@ import sys
 
 APP_NAME = "electron-spirit"
 PLUGIN_NAME = "ES NWMP"
-PLUGIN_VERSION = "0.3.1"
+PLUGIN_VERSION = "0.4.0"
 PLUGIN_SETTING = "plugin.setting.json"
 NWMP_URL = ["https://www.newworldminimap.com/map", "https://www.newworld-map.com/#/"]
-DEFAULT_CONFIG = {"x": 100, "y": 100, "w": 450, "h": 300, "debug": True, "url": NWMP_URL, "index": 0}
+DEFAULT_CONFIG = {
+    "x": 100,
+    "y": 100,
+    "w": 450,
+    "h": 300,
+    "debug": True,
+    "url": NWMP_URL,
+    "index": 0,
+    "opacity": 1.0,
+}
 
 
 class PluginApi(socketio.AsyncClientNamespace):
@@ -35,53 +44,73 @@ class PluginApi(socketio.AsyncClientNamespace):
     def on_echo(self, data):
         print("Echo:", data)
 
-    def on_register_topic(self, data):
-        print("Register topic:", data)
-
-    def on_add_input_hook(self, data):
+    def on_addInputHook(self, data):
         print("Add input hook:", data)
 
-    def on_del_input_hook(self, data):
+    def on_delInputHook(self, data):
         print("Del input hook:", data)
 
-    def on_insert_css(self, data):
+    def on_insertCSS(self, data):
         print("Insert css:", data)
 
-    def on_remove_css(self, data):
+    def on_removeCSS(self, data):
         print("Remove css:", data)
 
-    def on_update_elem(self, data):
-        print("Update elem:", data)
+    def on_addElem(self, data):
+        print("Add elem:", data)
         self.elem_count += 1
 
-    def on_remove_elem(self, data):
+    def on_delElem(self, data):
         print("Remove elem:", data)
         self.elem_count -= 1
 
-    def on_show_view(self, data):
+    def on_showElem(self, data):
         print("Show view:", data)
 
-    def on_hide_view(self, data):
+    def on_hideElem(self, data):
         print("Hide view:", data)
 
-    def on_exec_js_in_elem(self, data):
+    def on_setBound(self, data):
+        print("Set bound:", data)
+
+    def on_setContent(self, data):
+        print("Set content:", data)
+
+    def on_setOpacity(self, data):
+        print("Set opacity:", data)
+
+    def on_execJSInElem(self, data):
         print("Exec js in elem:", data)
 
     def on_notify(self, data):
         print("Notify:", data)
 
-    def on_update_bound(self, key, _type, bound):
-        print("Update bound:", key, _type, bound)
+    def on_updateBound(self, key, bound):
+        print("Update bound:", key, bound)
         self.parent.update_bound(bound)
 
-    def on_process_content(self, content):
+    def on_updateOpacity(self, key, opacity):
+        print("Update opacity:", key, opacity)
+        self.parent.set_opacity(opacity)
+
+    def on_processContent(self, content):
         print("Process content:", content)
 
-    def on_mode_flag(self, lock_flag, move_flag, dev_flag):
-        print("Mode flag:", lock_flag, move_flag, dev_flag)
-        self.lock_flag = lock_flag
-        self.move_flag = move_flag
-        self.dev_flag = dev_flag
+    def on_modeFlag(self, flags):
+        print("Mode flag:", flags)
+        self.lock_flag = flags["lock"]
+        self.move_flag = flags["move"]
+        self.dev_flag = flags["dev"]
+
+    def on_elemRemove(self, key):
+        print("Elem remove:", key)
+        # prevent remove elem
+        return True
+
+    def on_elemRefresh(self, key):
+        print("Elem refresh:", key)
+        # prevent refresh elem
+        return True
 
 
 class Plugin(object):
@@ -115,6 +144,11 @@ class Plugin(object):
         self.cfg = {**self.cfg, **bound}
         self.save_cfg()
 
+    def set_opacity(self, opacity):
+        self.cfg["opacity"] = opacity
+        print("Set opacity:", opacity)
+        self.save_cfg()
+
     def check_front_win_name(self):
         w = win32gui
         name = w.GetWindowText(w.GetForegroundWindow())
@@ -122,28 +156,20 @@ class Plugin(object):
             return True
         return False
 
-    async def register(self):
-        # Create a context for registering plugins
-        # You can either use sample password or use complex password
-        # You can also register multiple topic
-        ctx = {"topic": "nwmp", "pwd": str(uuid.uuid4())}
-        await sio.emit("register_topic", ctx)
-        self.ctx = ctx
-
     async def wait_for_elem(self):
         while self.api.elem_count < 1:
             await sio.sleep(0.1)
+        
+        await sio.emit("setOpacity", data=(self.catKey, self.cfg["opacity"]))
+        print("Set opacity:", self.cfg["opacity"])
 
     async def visible(self):
         self.show = True
         while True:
             if self.check_front_win_name() and not self.show:
                 await sio.emit(
-                    "show_view",
-                    data=(
-                        self.ctx,
-                        self.view_elem,
-                    ),
+                    "showElem",
+                    data=(self.catKey,),
                 )
                 self.show = True
             if (
@@ -155,26 +181,28 @@ class Plugin(object):
                 and not self.cfg["debug"]
             ):
                 await sio.emit(
-                    "hide_view",
-                    data=(
-                        self.ctx,
-                        self.view_elem,
-                    ),
+                    "hideElem",
+                    data=(self.catKey,),
                 )
                 self.show = False
             await sio.sleep(0.1)
 
     async def main(self):
+        self.catKey = "nwmp"
         self.view_elem = {
-            "key": "view-1",
             "type": 1,
-            "bound": {"x": self.cfg["x"], "y": self.cfg["y"], "w": self.cfg["w"], "h": self.cfg["h"]},
+            "bound": {
+                "x": self.cfg["x"],
+                "y": self.cfg["y"],
+                "w": self.cfg["w"],
+                "h": self.cfg["h"],
+            },
             "content": self.cfg["url"][self.cfg["index"]],
         }
         await sio.emit(
-            "update_elem",
+            "addElem",
             data=(
-                self.ctx,
+                self.catKey,
                 self.view_elem,
             ),
         )
@@ -184,7 +212,6 @@ class Plugin(object):
     async def loop(self):
         await sio.connect(f"http://localhost:{self.port}")
         await sio.emit("echo", "Hello World!")
-        await self.register()
         await self.main()
 
 
