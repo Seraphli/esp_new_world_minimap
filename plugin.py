@@ -34,12 +34,12 @@ class PluginApi(socketio.AsyncClientNamespace):
         self.move_flag = False
         self.dev_flag = False
 
-    def on_connect(self):
+    async def on_connect(self):
         print("Connected")
+        await self.parent.setup_connect()
 
     def on_disconnect(self):
         print("Disconnected")
-        sys.exit(0)
 
     def on_echo(self, data):
         print("Echo:", data)
@@ -187,7 +187,7 @@ class Plugin(object):
                 self.show = False
             await sio.sleep(0.1)
 
-    async def main(self):
+    async def setup_connect(self):
         self.catKey = "nwmp"
         self.view_elem = {
             "type": 1,
@@ -211,8 +211,7 @@ class Plugin(object):
 
     async def loop(self):
         await sio.connect(f"http://localhost:{self.port}")
-        await sio.emit("echo", "Hello World!")
-        await self.main()
+        await sio.wait()
 
 
 if __name__ == "__main__":
